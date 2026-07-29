@@ -308,8 +308,7 @@ function App() {
         {/* Header */}
         <header className="bg-blue-900 dark:bg-gray-950 text-white p-6 flex justify-between items-center transition-colors duration-200">
           <div>
-            <h1 className="text-3xl font-bold">Dienstplan Sandra Domienik</h1>
-            <p className="text-blue-200 dark:text-gray-400 mt-2">August & September 2026</p>
+            <h1 className="text-3xl font-bold">Dienstplan Sandra</h1>
           </div>
           <div className="flex items-center gap-3">
             <button
