@@ -65,6 +65,32 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // URL Deep Link Listener for shared events
+  useEffect(() => {
+    if (events.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const eventId = params.get('event');
+      if (eventId) {
+        const foundEvent = events.find(ev => ev.id === eventId);
+        if (foundEvent) {
+          setCurrentEvent({
+            id: foundEvent.id,
+            title: foundEvent.title,
+            date: foundEvent.date || '',
+            backgroundColor: foundEvent.backgroundColor,
+            borderColor: foundEvent.borderColor,
+            comment: foundEvent.comment || ''
+          });
+          setModalOpen(true);
+
+          // Clear URL parameter cleanly
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        }
+      }
+    }
+  }, [events]);
+
   const fetchEvents = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "events"));
@@ -208,6 +234,8 @@ function App() {
       }
     }
 
+    const shareUrl = `${window.location.origin}${window.location.pathname}?event=${currentEvent.id}`;
+
     let text = `📅 *Sandra's Dienstplan-Termin*\n`;
     text += `------------------------------------\n`;
     text += `Datum: ${formattedDate}\n`;
@@ -215,6 +243,7 @@ function App() {
     if (currentEvent.comment) {
       text += `Kommentar:\n${currentEvent.comment}\n`;
     }
+    text += `\nLink zum Termin: ${shareUrl}`;
     return text;
   };
 
@@ -250,6 +279,7 @@ function App() {
     setShareCopied(true);
     setTimeout(() => setShareCopied(false), 3000);
   };
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
