@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* Benutzerdefinierte Anpassungen für den Kalender */
+body {
+  background-color: #f3f4f6; /* Tailwind gray-100 */
+}
+
+/* FullCalendar Styling Anpassungen */
+.fc .fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937; /* Tailwind gray-800 */
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: #e5e7eb; /* Tailwind gray-200 */
+}
+
+.fc-day-today {
+  background-color: #eff6ff !important; /* Tailwind blue-50 */
+}
