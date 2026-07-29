@@ -20,55 +20,47 @@ export default function Login() {
   };
 
   return (
-    <div style={{
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh', 
-      backgroundColor: '#f3f4f6'
-    }}>
-      <form onSubmit={handleLogin} style={{
-        background: 'white', 
-        padding: '2rem', 
-        borderRadius: '8px', 
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-        width: '100%',
-        maxWidth: '400px'
-      }}>
-        <h2 style={{ textAlign: 'center', margin: '0 0 1rem 0' }}>Dienstplan Login</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 px-4 transition-colors duration-200">
+      <form 
+        onSubmit={handleLogin} 
+        className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-xl space-y-4 w-full max-w-md border border-gray-100 dark:border-gray-700 transition-colors duration-200"
+      >
+        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">Dienstplan Login</h2>
         
-        {error && <div style={{ color: 'red', fontSize: '0.9rem', textAlign: 'center' }}>{error}</div>}
+        {error && (
+          <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/50 p-2 rounded-lg">
+            {error}
+          </div>
+        )}
         
-        <input 
-          type="email" 
-          placeholder="E-Mail" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-Mail-Adresse</label>
+          <input 
+            type="email" 
+            placeholder="name@example.com" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none"
+          />
+        </div>
         
-        <input 
-          type="password" 
-          placeholder="Passwort" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Passwort</label>
+          <input 
+            type="password" 
+            placeholder="••••••••" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none"
+          />
+        </div>
         
-        <button type="submit" style={{
-          padding: '0.75rem', 
-          backgroundColor: '#007bff', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontWeight: 'bold'
-        }}>
+        <button 
+          type="submit" 
+          className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-sm cursor-pointer mt-2"
+        >
           Einloggen
         </button>
       </form>

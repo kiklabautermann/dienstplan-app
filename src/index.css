@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
+
 /* Benutzerdefinierte Anpassungen für den Kalender */
 body {
   background-color: #f3f4f6; /* Tailwind gray-100 */
+}
+
+body.dark {
+  background-color: #111827; /* Tailwind gray-900 */
 }
 
 /* FullCalendar Styling Anpassungen */
@@ -12,10 +19,43 @@ body {
   color: #1f2937; /* Tailwind gray-800 */
 }
 
+.dark .fc .fc-toolbar-title {
+  color: #f3f4f6; /* Tailwind gray-100 */
+}
+
 .fc-theme-standard td, .fc-theme-standard th {
   border-color: #e5e7eb; /* Tailwind gray-200 */
 }
 
+.dark .fc-theme-standard td, .dark .fc-theme-standard th {
+  border-color: #374151; /* Tailwind gray-700 */
+}
+
 .fc-day-today {
   background-color: #eff6ff !important; /* Tailwind blue-50 */
+}
+
+.dark .fc-day-today {
+  background-color: rgba(30, 58, 138, 0.25) !important; /* Semi-transparent dark blue */
+}
+
+/* Let's style other FullCalendar elements for dark mode */
+.dark .fc .fc-col-header-cell-cushion,
+.dark .fc .fc-daygrid-day-number {
+  color: #e5e7eb !important; /* Light text in calendar cells */
+}
+
+.dark .fc .fc-button-primary {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #e5e7eb !important;
+}
+
+.dark .fc .fc-button-primary:hover {
+  background-color: #4b5563 !important;
+}
+
+.dark .fc .fc-button-primary:disabled {
+  background-color: #1f2937 !important;
+  opacity: 0.5;
 }

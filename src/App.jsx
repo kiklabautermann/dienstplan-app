@@ -37,6 +37,26 @@ function App() {
   // Alle Events kommen nun aus Firestore
   const [events, setEvents] = useState([]);
   const [shareCopied, setShareCopied] = useState(false);
+  
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) {
+      return saved === 'true';
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [darkMode]);
 
   const eventCategories = [
     { label: "Frühschicht (1)", color: "#ef4444" },
@@ -282,33 +302,43 @@ function App() {
 
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden relative">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 md:p-8 transition-colors duration-200">
+      <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 dark:border dark:border-gray-700 shadow-xl rounded-2xl overflow-hidden relative transition-colors duration-200">
         
         {/* Header */}
-        <header className="bg-blue-900 text-white p-6 flex justify-between items-center">
+        <header className="bg-blue-900 dark:bg-gray-950 text-white p-6 flex justify-between items-center transition-colors duration-200">
           <div>
             <h1 className="text-3xl font-bold">Dienstplan Sandra Domienik</h1>
-            <p className="text-blue-200 mt-2">August & September 2026</p>
+            <p className="text-blue-200 dark:text-gray-400 mt-2">August & September 2026</p>
           </div>
-          <button 
-            onClick={handleLogout}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#ef4444', // Tailwind red-500
-              color: 'white',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              border: 'none',
-              cursor: 'pointer'
-            }}
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2.5 rounded-lg bg-blue-800 hover:bg-blue-700 dark:bg-gray-800 dark:hover:bg-gray-700 text-white font-semibold transition-colors flex items-center justify-center cursor-pointer shadow-sm text-lg"
+              title={darkMode ? "Licht-Modus aktivieren" : "Dunkel-Modus aktivieren"}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+            <button 
+              onClick={handleLogout}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#ef4444', // Tailwind red-500
+                color: 'white',
+                borderRadius: '6px',
+                fontWeight: 'bold',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              Logout
+            </button>
+          </div>
         </header>
 
         {/* Legend */}
-        <div className="p-4 bg-gray-50 border-b border-gray-200 flex flex-wrap gap-4 text-sm font-medium">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex flex-wrap gap-4 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-red-500"></span> Frühschicht (1)</div>
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-sky-500"></span> Spätschicht (2)</div>
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-blue-900"></span> Nachtschicht</div>
@@ -319,7 +349,7 @@ function App() {
 
         {/* Database Seeder Button (Nur anzeigen wenn keine Events da sind) */}
         {events.length === 0 && (
-          <div className="p-4 bg-yellow-50 border-b border-yellow-200 flex justify-center">
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-950/20 border-b border-yellow-200 dark:border-yellow-900/50 flex justify-center text-yellow-800 dark:text-yellow-200 transition-colors duration-200">
              <button 
                 onClick={seedDatabase}
                 className="px-4 py-2 bg-yellow-500 text-white font-bold rounded shadow hover:bg-yellow-600"
@@ -331,7 +361,7 @@ function App() {
 
         {/* Calendar */}
         <div className="p-6">
-          <p className="text-sm text-gray-500 mb-4 italic">Tipp: Klicke auf einen beliebigen Termin, um ihn zu bearbeiten. Klicke auf einen leeren Tag, um einen neuen Termin hinzuzufügen.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 italic">Tipp: Klicke auf einen beliebigen Termin, um ihn zu bearbeiten. Klicke auf einen leeren Tag, um einen neuen Termin hinzuzufügen.</p>
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -368,24 +398,24 @@ function App() {
         {/* Modal for Add/Edit Event */}
         {modalOpen && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-              <div className="bg-blue-900 px-6 py-4">
+            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transition-colors duration-200">
+              <div className="bg-blue-900 dark:bg-gray-950 px-6 py-4 transition-colors duration-200">
                 <h3 className="text-lg font-bold text-white">
                   {currentEvent.id ? 'Termin bearbeiten' : 'Neuen Termin hinzufügen'}
                 </h3>
               </div>
               <form onSubmit={saveEvent} className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Datum</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Datum</label>
                   <input 
                     type="text" 
                     value={currentEvent.date} 
                     disabled 
-                    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-600 cursor-not-allowed"
+                    className="w-full bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-600 dark:text-gray-300 cursor-not-allowed transition-colors duration-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Kategorie / Farbe</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategorie / Farbe</label>
                   <select 
                     value={currentEvent.backgroundColor}
                     onChange={(e) => {
@@ -399,7 +429,7 @@ function App() {
                         title: (!currentEvent.title || eventCategories.some(c => c.label === currentEvent.title)) ? selectedCat.label : currentEvent.title
                       });
                     }}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none mb-4"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none mb-4 transition-colors duration-200"
                   >
                     {eventCategories.map((cat, idx) => (
                       <option key={idx} value={cat.color}>
@@ -413,7 +443,7 @@ function App() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Titel des Termins (optional anpassbar)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titel des Termins (optional anpassbar)</label>
                   <input 
                     type="text" 
                     autoFocus
@@ -421,50 +451,50 @@ function App() {
                     value={currentEvent.title} 
                     onChange={e => setCurrentEvent({...currentEvent, title: e.target.value})}
                     placeholder="z.B. Ausflug an den See"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-colors duration-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Kommentar / Details</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kommentar / Details</label>
                   <textarea 
                     value={currentEvent.comment || ''} 
                     onChange={e => setCurrentEvent({...currentEvent, comment: e.target.value})}
                     placeholder="Trage hier zusätzliche Notizen, Details oder Links (z.B. https://google.com) ein..."
                     rows={4}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y text-sm"
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none resize-y text-sm transition-colors duration-200"
                   />
                 </div>
                 {currentEvent.comment && (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
-                    <span className="block text-xs font-semibold text-gray-500 mb-1">Klickbare Links & Vorschau:</span>
-                    <div className="whitespace-pre-wrap break-words text-gray-800">
+                  <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm transition-colors duration-200">
+                    <span className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Klickbare Links & Vorschau:</span>
+                    <div className="whitespace-pre-wrap break-words text-gray-800 dark:text-gray-200">
                       {renderCommentWithLinks(currentEvent.comment)}
                     </div>
                   </div>
                 )}
                 {/* Termin teilen (nur für bestehende Termine sinnvoll) */}
                 {currentEvent.id && (
-                  <div className="border-t border-gray-200 pt-4 mt-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-2">Termin teilen</label>
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Termin teilen</label>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={handleShareThreema}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors"
+                        className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
                       >
                         💬 Threema
                       </button>
                       <button
                         type="button"
                         onClick={handleShareSignal}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-xs font-medium transition-colors"
+                        className="flex items-center gap-1 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
                       >
                         🔵 Signal
                       </button>
                       <button
                         type="button"
                         onClick={handleShareEmail}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-xs font-medium transition-colors"
+                        className="flex items-center gap-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
                       >
                         ✉️ E-Mail
                       </button>
@@ -472,7 +502,7 @@ function App() {
                         <button
                           type="button"
                           onClick={handleShareSystem}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition-colors"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
                         >
                           📱 Teilen
                         </button>
@@ -480,13 +510,13 @@ function App() {
                       <button
                         type="button"
                         onClick={handleCopyText}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-colors border border-gray-300"
+                        className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg text-xs font-medium transition-colors border border-gray-300 dark:border-gray-600 cursor-pointer"
                       >
                         📋 Kopieren
                       </button>
                     </div>
                     {shareCopied && (
-                      <span className="text-xs text-green-600 font-medium block mt-1">✓ Text in die Zwischenablage kopiert!</span>
+                      <span className="text-xs text-green-600 dark:text-green-400 font-medium block mt-1">✓ Text in die Zwischenablage kopiert!</span>
                     )}
                   </div>
                 )}
@@ -495,7 +525,7 @@ function App() {
                     <button 
                       type="button" 
                       onClick={deleteEvent}
-                      className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-900/30 border border-transparent dark:border-red-900/50 font-medium rounded-lg transition-colors cursor-pointer"
                     >
                       Löschen
                     </button>
@@ -505,13 +535,13 @@ function App() {
                     <button 
                       type="button" 
                       onClick={() => setModalOpen(false)}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium border border-gray-300 dark:border-gray-600 cursor-pointer"
                     >
                       Abbrechen
                     </button>
                     <button 
                       type="submit" 
-                      className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 font-medium rounded-lg transition-colors shadow-sm"
+                      className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 font-medium rounded-lg transition-colors shadow-sm cursor-pointer"
                     >
                       Speichern
                     </button>
