@@ -8,6 +8,28 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch } fr
 import { auth, db } from "./firebase";
 import Login from "./Login";
 
+function renderCommentWithLinks(text) {
+  if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, index) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a 
+          key={index} 
+          href={part} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-blue-600 hover:text-blue-800 underline break-all font-medium"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +49,7 @@ function App() {
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false)
-  const [currentEvent, setCurrentEvent] = useState({ id: null, title: '', date: '', backgroundColor: '#a855f7', borderColor: '#a855f7' })
+  const [currentEvent, setCurrentEvent] = useState({ id: null, title: '', date: '', backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '' })
 
   // Auth Listener
   useEffect(() => {
@@ -95,7 +117,7 @@ function App() {
 
   // Klick auf einen leeren Tag -> Neuen Termin anlegen
   const handleDateClick = (arg) => {
-    setCurrentEvent({ id: null, title: '', date: arg.dateStr, backgroundColor: '#a855f7', borderColor: '#a855f7' })
+    setCurrentEvent({ id: null, title: '', date: arg.dateStr, backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '' })
     setModalOpen(true)
   }
 
@@ -106,7 +128,8 @@ function App() {
       title: arg.event.title,
       date: arg.event.startStr,
       backgroundColor: arg.event.backgroundColor,
-      borderColor: arg.event.borderColor
+      borderColor: arg.event.borderColor,
+      comment: arg.event.extendedProps.comment || ''
     })
     setModalOpen(true)
   }
@@ -122,7 +145,8 @@ function App() {
         await updateDoc(eventRef, {
           title: currentEvent.title,
           backgroundColor: currentEvent.backgroundColor,
-          borderColor: currentEvent.borderColor
+          borderColor: currentEvent.borderColor,
+          comment: currentEvent.comment || ''
         });
         
         // Lokalen State updaten (für sofortige Anzeige)
@@ -130,7 +154,8 @@ function App() {
           ...ev, 
           title: currentEvent.title,
           backgroundColor: currentEvent.backgroundColor,
-          borderColor: currentEvent.borderColor
+          borderColor: currentEvent.borderColor,
+          comment: currentEvent.comment || ''
         } : ev));
       } else {
         // Neues Event zu Firestore hinzufügen
@@ -139,7 +164,8 @@ function App() {
           date: currentEvent.date,
           backgroundColor: currentEvent.backgroundColor,
           borderColor: currentEvent.borderColor,
-          allDay: true
+          allDay: true,
+          comment: currentEvent.comment || ''
         });
 
         // Lokalen State updaten
@@ -149,7 +175,8 @@ function App() {
           date: currentEvent.date,
           backgroundColor: currentEvent.backgroundColor,
           borderColor: currentEvent.borderColor,
-          allDay: true
+          allDay: true,
+          comment: currentEvent.comment || ''
         }]);
       }
       setModalOpen(false)
@@ -241,6 +268,17 @@ function App() {
             }}
             dateClick={handleDateClick}
             eventClick={handleEventClick}
+            eventContent={(eventInfo) => {
+              const hasComment = eventInfo.event.extendedProps.comment;
+              return (
+                <div className="flex items-center gap-1 overflow-hidden w-full px-1 text-white">
+                  {hasComment && (
+                    <span className="text-[10px] flex-shrink-0" title="Kommentar vorhanden">💬</span>
+                  )}
+                  <span className="truncate text-xs font-semibold">{eventInfo.event.title}</span>
+                </div>
+              );
+            }}
           />
         </div>
 
@@ -303,6 +341,24 @@ function App() {
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Kommentar / Details</label>
+                  <textarea 
+                    value={currentEvent.comment || ''} 
+                    onChange={e => setCurrentEvent({...currentEvent, comment: e.target.value})}
+                    placeholder="Trage hier zusätzliche Notizen, Details oder Links (z.B. https://google.com) ein..."
+                    rows={4}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y text-sm"
+                  />
+                </div>
+                {currentEvent.comment && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
+                    <span className="block text-xs font-semibold text-gray-500 mb-1">Klickbare Links & Vorschau:</span>
+                    <div className="whitespace-pre-wrap break-words text-gray-800">
+                      {renderCommentWithLinks(currentEvent.comment)}
+                    </div>
+                  </div>
+                )}
                 <div className="pt-4 flex justify-between gap-3">
                   {currentEvent.id ? (
                     <button 
