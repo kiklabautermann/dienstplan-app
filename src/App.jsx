@@ -36,6 +36,7 @@ function App() {
 
   // Alle Events kommen nun aus Firestore
   const [events, setEvents] = useState([]);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const eventCategories = [
     { label: "Frühschicht (1)", color: "#ef4444" },
@@ -198,6 +199,58 @@ function App() {
     }
   }
 
+  const getShareText = () => {
+    let formattedDate = currentEvent.date;
+    if (currentEvent.date) {
+      const parts = currentEvent.date.split('-');
+      if (parts.length === 3) {
+        formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+      }
+    }
+
+    let text = `📅 *Sandra's Dienstplan-Termin*\n`;
+    text += `------------------------------------\n`;
+    text += `Datum: ${formattedDate}\n`;
+    text += `Titel: ${currentEvent.title}\n`;
+    if (currentEvent.comment) {
+      text += `Kommentar:\n${currentEvent.comment}\n`;
+    }
+    return text;
+  };
+
+  const handleShareThreema = () => {
+    const text = getShareText();
+    window.open(`https://threema.id/compose?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleShareEmail = () => {
+    const subject = `Dienstplan-Termin: ${currentEvent.title}`;
+    const body = getShareText();
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const handleShareSignal = () => {
+    const text = getShareText();
+    navigator.clipboard.writeText(text);
+    alert("Der Termin-Text wurde in die Zwischenablage kopiert!\n\nSignal wird jetzt geöffnet, damit du den Text dort mit 'Einfügen' (Paste) versenden kannst.");
+    window.open('sgnl://', '_blank');
+  };
+
+  const handleShareSystem = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `Termin: ${currentEvent.title}`,
+        text: getShareText()
+      }).catch(err => console.log("Fehler beim Teilen:", err));
+    }
+  };
+
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(getShareText());
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 3000);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden relative">
@@ -357,6 +410,54 @@ function App() {
                     <div className="whitespace-pre-wrap break-words text-gray-800">
                       {renderCommentWithLinks(currentEvent.comment)}
                     </div>
+                  </div>
+                )}
+                {/* Termin teilen (nur für bestehende Termine sinnvoll) */}
+                {currentEvent.id && (
+                  <div className="border-t border-gray-200 pt-4 mt-2">
+                    <label className="block text-xs font-semibold text-gray-500 mb-2">Termin teilen</label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={handleShareThreema}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors"
+                      >
+                        💬 Threema
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleShareSignal}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-xs font-medium transition-colors"
+                      >
+                        🔵 Signal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleShareEmail}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-xs font-medium transition-colors"
+                      >
+                        ✉️ E-Mail
+                      </button>
+                      {navigator.share && (
+                        <button
+                          type="button"
+                          onClick={handleShareSystem}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition-colors"
+                        >
+                          📱 Teilen
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleCopyText}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-colors border border-gray-300"
+                      >
+                        📋 Kopieren
+                      </button>
+                    </div>
+                    {shareCopied && (
+                      <span className="text-xs text-green-600 font-medium block mt-1">✓ Text in die Zwischenablage kopiert!</span>
+                    )}
                   </div>
                 )}
                 <div className="pt-4 flex justify-between gap-3">
