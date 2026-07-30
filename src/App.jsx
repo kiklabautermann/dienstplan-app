@@ -64,6 +64,7 @@ function App() {
     { label: "Nachtschicht", color: "#1e3a8a" },
     { label: "Frei", color: "#22c55e" },
     { label: "Ferien", color: "#22c55e" },
+    { label: "Ferien Manuel", color: "#10b981" },
     { label: "Pikett (P)", color: "#f97316" },
     { label: "Privat / Event", color: "#a855f7" }
   ];
@@ -377,6 +378,7 @@ function App() {
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-sky-500"></span> Spätschicht (2)</div>
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-blue-900"></span> Nachtschicht</div>
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-green-500"></span> Frei / Ferien / Ko / WB</div>
+          <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-[#10b981]"></span> Ferien Manuel</div>
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-orange-500"></span> Pikett (P)</div>
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-purple-500"></span> Privat / Event</div>
         </div>
@@ -412,6 +414,15 @@ function App() {
             buttonText={{
               today: 'Heute',
               month: 'Monat'
+            }}
+            dayCellClassNames={(arg) => {
+              const y = arg.date.getFullYear();
+              const m = String(arg.date.getMonth() + 1).padStart(2, '0');
+              const d = String(arg.date.getDate()).padStart(2, '0');
+              const dateStr = `${y}-${m}-${d}`;
+              
+              const hasManuelFerien = events.some(ev => ev.date === dateStr && ev.backgroundColor === '#10b981');
+              return hasManuelFerien ? ['manuel-ferien-bg'] : [];
             }}
             dateClick={handleDateClick}
             eventClick={handleEventClick}

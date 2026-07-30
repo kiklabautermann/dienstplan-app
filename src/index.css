@@ -59,3 +59,11 @@ body.dark {
   background-color: #1f2937 !important;
   opacity: 0.5;
 }
+
+/* Ferien Manuel Highlight Background */
+.manuel-ferien-bg {
+  background-color: #dcfce7 !important; /* Tailwind green-100 */
+}
+.dark .manuel-ferien-bg {
+  background-color: rgba(22, 101, 52, 0.4) !important; /* Tailwind green-800 with opacity */
+}
