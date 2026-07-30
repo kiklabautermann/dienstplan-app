@@ -70,7 +70,7 @@ function App() {
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false)
-  const [currentEvent, setCurrentEvent] = useState({ id: null, title: '', date: '', backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '' })
+  const [currentEvent, setCurrentEvent] = useState({ id: null, title: '', date: '', backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '', recurrence: 'none' })
 
   // Auth Listener
   useEffect(() => {
@@ -114,10 +114,51 @@ function App() {
   const fetchEvents = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "events"));
-      const eventsData = querySnapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      }));
+      const eventsData = [];
+      querySnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.recurrence && data.recurrence !== 'none') {
+          // Basisdatum auslesen und zerlegen um Zeitzonen-Shifts zu vermeiden
+          const parts = data.date.split('-');
+          if (parts.length === 3) {
+            const yyyy = parseInt(parts[0], 10);
+            const mm = parseInt(parts[1], 10);
+            const dd = parseInt(parts[2], 10);
+            
+            // 30 Vorkommnisse generieren
+            for (let i = 0; i < 30; i++) {
+              let d = new Date(yyyy, mm - 1, dd);
+              if (data.recurrence === 'yearly') {
+                d.setFullYear(yyyy + i);
+              } else if (data.recurrence === 'monthly') {
+                d.setMonth((mm - 1) + i);
+              } else if (data.recurrence === 'weekly') {
+                d.setDate(dd + (i * 7));
+              }
+              
+              const resY = d.getFullYear();
+              const resM = String(d.getMonth() + 1).padStart(2, '0');
+              const resD = String(d.getDate()).padStart(2, '0');
+              
+              eventsData.push({
+                ...data,
+                id: `${doc.id}_${i}`,
+                originalId: doc.id,
+                date: `${resY}-${resM}-${resD}`
+              });
+            }
+          } else {
+             // Fallback falls Datum falsch formatiert ist
+             eventsData.push({ ...data, id: doc.id, originalId: doc.id });
+          }
+        } else {
+          eventsData.push({
+            ...data,
+            id: doc.id,
+            originalId: doc.id
+          });
+        }
+      });
       setEvents(eventsData);
     } catch (error) {
       console.error("Fehler beim Laden der Termine:", error);
@@ -164,19 +205,26 @@ function App() {
 
   // Klick auf einen leeren Tag -> Neuen Termin anlegen
   const handleDateClick = (arg) => {
-    setCurrentEvent({ id: null, title: '', date: arg.dateStr, backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '' })
+    setCurrentEvent({ id: null, title: '', date: arg.dateStr, backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '', recurrence: 'none' })
     setModalOpen(true)
   }
 
   // Klick auf einen bestehenden Termin -> Bearbeiten/Löschen (jetzt für alle)
   const handleEventClick = (arg) => {
+    const origId = arg.event.extendedProps.originalId || arg.event.id;
+    const isRecurring = arg.event.extendedProps.recurrence && arg.event.extendedProps.recurrence !== 'none';
+    
     setCurrentEvent({
-      id: arg.event.id,
+      id: origId,
       title: arg.event.title,
-      date: arg.event.startStr,
+      // Bei wiederkehrenden Events zeigen wir zur Bearbeitung das Basisdatum an,
+      // wenn gewünscht kann man hier auch arg.event.startStr nehmen (dann sieht man das angeklickte).
+      // Da Änderungen aber für alle gelten, ist das ursprüngliche Startdatum sinnvoll.
+      date: isRecurring && arg.event.extendedProps.date ? arg.event.extendedProps.date : arg.event.startStr,
       backgroundColor: arg.event.backgroundColor,
       borderColor: arg.event.borderColor,
-      comment: arg.event.extendedProps.comment || ''
+      comment: arg.event.extendedProps.comment || '',
+      recurrence: arg.event.extendedProps.recurrence || 'none'
     })
     setModalOpen(true)
   }
@@ -193,39 +241,23 @@ function App() {
           title: currentEvent.title,
           backgroundColor: currentEvent.backgroundColor,
           borderColor: currentEvent.borderColor,
-          comment: currentEvent.comment || ''
+          comment: currentEvent.comment || '',
+          recurrence: currentEvent.recurrence || 'none'
         });
-        
-        // Lokalen State updaten (für sofortige Anzeige)
-        setEvents(prev => prev.map(ev => ev.id === currentEvent.id ? { 
-          ...ev, 
-          title: currentEvent.title,
-          backgroundColor: currentEvent.backgroundColor,
-          borderColor: currentEvent.borderColor,
-          comment: currentEvent.comment || ''
-        } : ev));
       } else {
         // Neues Event zu Firestore hinzufügen
-        const docRef = await addDoc(collection(db, "events"), {
+        await addDoc(collection(db, "events"), {
           title: currentEvent.title,
           date: currentEvent.date,
           backgroundColor: currentEvent.backgroundColor,
           borderColor: currentEvent.borderColor,
           allDay: true,
-          comment: currentEvent.comment || ''
+          comment: currentEvent.comment || '',
+          recurrence: currentEvent.recurrence || 'none'
         });
-
-        // Lokalen State updaten
-        setEvents(prev => [...prev, {
-          id: docRef.id,
-          title: currentEvent.title,
-          date: currentEvent.date,
-          backgroundColor: currentEvent.backgroundColor,
-          borderColor: currentEvent.borderColor,
-          allDay: true,
-          comment: currentEvent.comment || ''
-        }]);
       }
+      // Statt lokalem Map/Push laden wir einfach neu, um auch Wiederholungen korrekt zu generieren
+      await fetchEvents();
       setModalOpen(false)
     } catch (error) {
       console.error("Fehler beim Speichern:", error);
@@ -237,7 +269,7 @@ function App() {
     if (!currentEvent.id) return;
     try {
       await deleteDoc(doc(db, "events", currentEvent.id));
-      setEvents(prev => prev.filter(ev => ev.id !== currentEvent.id));
+      await fetchEvents();
       setModalOpen(false)
     } catch (error) {
       console.error("Fehler beim Löschen:", error);
@@ -441,6 +473,21 @@ function App() {
                     )}
                   </select>
                 </div>
+                {currentEvent.backgroundColor === '#a855f7' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wiederholung</label>
+                    <select 
+                      value={currentEvent.recurrence}
+                      onChange={(e) => setCurrentEvent({ ...currentEvent, recurrence: e.target.value })}
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none mb-4 transition-colors duration-200"
+                    >
+                      <option value="none">Keine Wiederholung</option>
+                      <option value="weekly">Wöchentlich</option>
+                      <option value="monthly">Monatlich</option>
+                      <option value="yearly">Jährlich</option>
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titel des Termins (optional anpassbar)</label>
                   <input 
