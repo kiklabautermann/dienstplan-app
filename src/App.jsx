@@ -70,7 +70,7 @@ function App() {
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false)
-  const [currentEvent, setCurrentEvent] = useState({ id: null, title: '', date: '', backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '', recurrence: 'none' })
+  const [currentEvent, setCurrentEvent] = useState({ id: null, title: '', date: '', backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '', recurrence: 'none', emoji: '' })
 
   // Auth Listener
   useEffect(() => {
@@ -224,7 +224,8 @@ function App() {
       backgroundColor: arg.event.backgroundColor,
       borderColor: arg.event.borderColor,
       comment: arg.event.extendedProps.comment || '',
-      recurrence: arg.event.extendedProps.recurrence || 'none'
+      recurrence: arg.event.extendedProps.recurrence || 'none',
+      emoji: arg.event.extendedProps.emoji || ''
     })
     setModalOpen(true)
   }
@@ -242,7 +243,8 @@ function App() {
           backgroundColor: currentEvent.backgroundColor,
           borderColor: currentEvent.borderColor,
           comment: currentEvent.comment || '',
-          recurrence: currentEvent.recurrence || 'none'
+          recurrence: currentEvent.recurrence || 'none',
+          emoji: currentEvent.emoji || ''
         });
       } else {
         // Neues Event zu Firestore hinzufügen
@@ -253,7 +255,8 @@ function App() {
           borderColor: currentEvent.borderColor,
           allDay: true,
           comment: currentEvent.comment || '',
-          recurrence: currentEvent.recurrence || 'none'
+          recurrence: currentEvent.recurrence || 'none',
+          emoji: currentEvent.emoji || ''
         });
       }
       // Statt lokalem Map/Push laden wir einfach neu, um auch Wiederholungen korrekt zu generieren
@@ -414,12 +417,16 @@ function App() {
             eventClick={handleEventClick}
             eventContent={(eventInfo) => {
               const hasComment = eventInfo.event.extendedProps.comment;
+              const emoji = eventInfo.event.extendedProps.emoji;
               return (
                 <div className="flex items-center gap-1 overflow-hidden w-full px-1 text-white">
                   {hasComment && (
                     <span className="text-[10px] flex-shrink-0" title="Kommentar vorhanden">💬</span>
                   )}
-                  <span className="truncate text-xs font-semibold">{eventInfo.event.title}</span>
+                  <span className="truncate text-xs font-semibold">
+                    {emoji && <span className="mr-1">{emoji}</span>}
+                    {eventInfo.event.title}
+                  </span>
                 </div>
               );
             }}
@@ -499,6 +506,22 @@ function App() {
                     placeholder="z.B. Ausflug an den See"
                     className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-colors duration-200"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Emoji (optional)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {['', '🎂', '🎉', '🏖️', '✈️', '🚗', '🩺', '💇', '🎬', '🎵', '🎮', '🍽️', '🥂', '⚽', '🏃', '🧘'].map((em, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setCurrentEvent({ ...currentEvent, emoji: em })}
+                        className={`w-8 h-8 flex items-center justify-center rounded-full text-lg cursor-pointer transition-colors ${currentEvent.emoji === em ? 'bg-blue-200 dark:bg-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 border border-transparent'}`}
+                        title={em === '' ? 'Kein Emoji' : undefined}
+                      >
+                        {em === '' ? '🚫' : em}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kommentar / Details</label>
