@@ -537,19 +537,23 @@ function App() {
               const weather = weatherData[dateKey];
               
               return (
-                <div className="flex justify-between items-start w-full">
-                  <div className="text-[10px] leading-tight text-gray-500 dark:text-gray-400 font-medium flex gap-1 items-center p-1">
-                    {weather && (
-                      <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-sm rounded px-1.5 py-0.5" title={`Max: ${weather.max}°C, Min: ${weather.min}°C`}>
-                        <span className="text-sm">{weather.icon}</span>
-                        <span className="hidden sm:flex flex-col text-[9px] font-bold">
-                          <span className="text-red-500">{weather.max}°</span>
-                          <span className="text-blue-500">{weather.min}°</span>
-                        </span>
-                      </div>
-                    )}
+                <div className="flex justify-end w-full relative">
+                  {weather && (
+                    <div 
+                      className="absolute left-0 top-0 m-0.5 sm:m-1 flex items-center bg-transparent sm:bg-white sm:dark:bg-gray-800 sm:border border-gray-200 dark:border-gray-600 sm:shadow-sm rounded sm:px-1 py-0.5 z-10" 
+                      title={`Max: ${weather.max}°C, Min: ${weather.min}°C`}
+                    >
+                      <span className="text-xs sm:text-sm leading-none">{weather.icon}</span>
+                      <span className="hidden sm:flex flex-col text-[9px] font-bold leading-none ml-1">
+                        <span className="text-red-500">{weather.max}°</span>
+                        <span className="text-blue-500">{weather.min}°</span>
+                      </span>
+                    </div>
+                  )}
+                  {/* Die Standardklasse fc-daygrid-day-number ist wichtig, damit unser CSS für 'Heute' greift */}
+                  <div className="fc-daygrid-day-number z-10 p-1">
+                    {arg.dayNumberText}
                   </div>
-                  <div className="p-1">{arg.dayNumberText}</div>
                 </div>
               );
             }}
