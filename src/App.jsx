@@ -74,6 +74,7 @@ function App() {
   const [currentEvent, setCurrentEvent] = useState({ id: null, title: '', date: '', backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '', recurrence: 'none', emoji: '' })
 
   const [weatherData, setWeatherData] = useState({});
+  const [stampMode, setStampMode] = useState(null); // Speichert die ausgewählte Kategorie für den Quick-Add Modus
 
   // Wetter API (Open-Meteo) für die nächsten 6 Tage
   useEffect(() => {
@@ -242,10 +243,29 @@ function App() {
     return <Login />;
   }
 
-  // Klick auf einen leeren Tag -> Neuen Termin anlegen
-  const handleDateClick = (arg) => {
-    setCurrentEvent({ id: null, title: '', date: arg.dateStr, backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '', recurrence: 'none' })
-    setModalOpen(true)
+  // Klick auf einen leeren Tag -> Neuen Termin anlegen (oder stempeln)
+  const handleDateClick = async (arg) => {
+    if (stampMode) {
+      try {
+        await addDoc(collection(db, "events"), {
+          title: stampMode.label,
+          date: arg.dateStr,
+          backgroundColor: stampMode.color,
+          borderColor: stampMode.color,
+          allDay: true,
+          comment: '',
+          recurrence: 'none',
+          emoji: ''
+        });
+        await fetchEvents();
+      } catch (error) {
+        console.error("Fehler beim Quick-Add (Stempeln):", error);
+        alert("Fehler beim Stempeln des Termins.");
+      }
+    } else {
+      setCurrentEvent({ id: null, title: '', date: arg.dateStr, backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '', recurrence: 'none', emoji: '' })
+      setModalOpen(true)
+    }
   }
 
   // Klick auf einen bestehenden Termin -> Bearbeiten/Löschen (jetzt für alle)
@@ -482,6 +502,39 @@ function App() {
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-[#10b981]"></span> Ferien Manuel</div>
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-orange-500"></span> Pikett (P)</div>
           <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-purple-500"></span> Privat / Event</div>
+        </div>
+
+        {/* Quick-Add Toolbar */}
+        <div className="p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            ⚡ Quick-Add (Stempel-Modus)
+            {stampMode && <span className="text-xs font-normal bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-0.5 rounded-full animate-pulse">Aktiv</span>}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {eventCategories.map((cat, idx) => {
+              const isActive = stampMode?.label === cat.label;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setStampMode(isActive ? null : cat)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer border ${isActive ? 'ring-2 ring-offset-1 dark:ring-offset-gray-800' : 'opacity-80 hover:opacity-100'}`}
+                  style={{
+                    backgroundColor: isActive ? cat.color : 'transparent',
+                    color: isActive ? 'white' : cat.color,
+                    borderColor: cat.color,
+                    boxShadow: isActive ? `0 0 0 2px ${cat.color}40` : 'none'
+                  }}
+                >
+                  {isActive ? `✓ ${cat.label} stempeln` : `+ ${cat.label}`}
+                </button>
+              );
+            })}
+          </div>
+          {stampMode && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Klicke nun auf beliebige Tage im Kalender, um "<strong>{stampMode.label}</strong>" sofort einzutragen. Klicke den Button oben erneut, um den Modus zu beenden.
+            </p>
+          )}
         </div>
 
         {/* Database Seeder Button (Nur anzeigen wenn keine Events da sind) */}
