@@ -79,8 +79,8 @@ function App() {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // Koordinaten (Zürich/Schweiz als Standard)
-        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=47.3769&longitude=8.5417&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=6");
+        // Koordinaten (4310 Rheinfelden, Schweiz)
+        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=47.5546&longitude=7.7925&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=6");
         const data = await res.json();
         
         if (data && data.daily) {
