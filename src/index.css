@@ -66,7 +66,7 @@ body.dark {
 /* Let's style other FullCalendar elements for dark mode */
 html.dark body .fc .fc-col-header-cell-cushion,
 .dark .fc-theme-standard th .fc-col-header-cell-cushion {
-  color: #ffffff !important; /* Pures Weiß für maximalen Kontrast, extrem spezifischer Selektor */
+  color: #9ca3af !important; /* Tailwind gray-400 für Wochentage (dunkel/dezent) im Dark Mode */
   font-weight: bold !important;
 }
 
