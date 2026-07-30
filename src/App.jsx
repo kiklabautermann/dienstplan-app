@@ -452,75 +452,88 @@ function App() {
                     className="w-full bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-600 dark:text-gray-300 cursor-not-allowed transition-colors duration-200"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategorie / Farbe</label>
-                  <select 
-                    value={currentEvent.backgroundColor}
-                    onChange={(e) => {
-                      const selectedColor = e.target.value;
-                      const selectedCat = eventCategories.find(c => c.color === selectedColor);
-                      setCurrentEvent({
-                        ...currentEvent, 
-                        backgroundColor: selectedColor, 
-                        borderColor: selectedColor,
-                        // Wenn der Titel leer ist oder einem anderen Standard-Titel entspricht, ändern wir ihn passend zur Kategorie mit.
-                        title: (!currentEvent.title || eventCategories.some(c => c.label === currentEvent.title)) ? selectedCat.label : currentEvent.title
-                      });
-                    }}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none mb-4 transition-colors duration-200"
-                  >
-                    {eventCategories.map((cat, idx) => (
-                      <option key={idx} value={cat.color}>
-                        {cat.label}
-                      </option>
-                    ))}
-                    {/* Fallback für alte Termine mit anderen Farben */}
-                    {!eventCategories.find(c => c.color === currentEvent.backgroundColor) && (
-                       <option value={currentEvent.backgroundColor}>Andere ({currentEvent.backgroundColor})</option>
-                    )}
-                  </select>
-                </div>
-                {currentEvent.backgroundColor === '#a855f7' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wiederholung</label>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategorie / Farbe</label>
                     <select 
-                      value={currentEvent.recurrence}
-                      onChange={(e) => setCurrentEvent({ ...currentEvent, recurrence: e.target.value })}
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none mb-4 transition-colors duration-200"
+                      value={currentEvent.backgroundColor}
+                      onChange={(e) => {
+                        const selectedColor = e.target.value;
+                        const selectedCat = eventCategories.find(c => c.color === selectedColor);
+                        setCurrentEvent({
+                          ...currentEvent, 
+                          backgroundColor: selectedColor, 
+                          borderColor: selectedColor,
+                          // Wenn der Titel leer ist oder einem anderen Standard-Titel entspricht, ändern wir ihn passend zur Kategorie mit.
+                          title: (!currentEvent.title || eventCategories.some(c => c.label === currentEvent.title)) ? selectedCat.label : currentEvent.title
+                        });
+                      }}
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none transition-colors duration-200"
                     >
-                      <option value="none">Keine Wiederholung</option>
-                      <option value="weekly">Wöchentlich</option>
-                      <option value="monthly">Monatlich</option>
-                      <option value="yearly">Jährlich</option>
+                      {eventCategories.map((cat, idx) => (
+                        <option key={idx} value={cat.color}>
+                          {cat.label}
+                        </option>
+                      ))}
+                      {/* Fallback für alte Termine mit anderen Farben */}
+                      {!eventCategories.find(c => c.color === currentEvent.backgroundColor) && (
+                         <option value={currentEvent.backgroundColor}>Andere ({currentEvent.backgroundColor})</option>
+                      )}
                     </select>
                   </div>
-                )}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titel des Termins (optional anpassbar)</label>
-                  <input 
-                    type="text" 
-                    autoFocus
-                    required
-                    value={currentEvent.title} 
-                    onChange={e => setCurrentEvent({...currentEvent, title: e.target.value})}
-                    placeholder="z.B. Ausflug an den See"
-                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-colors duration-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Emoji (optional)</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['', '🎂', '🎉', '🏖️', '✈️', '🚗', '🩺', '💇', '🎬', '🎵', '🎮', '🍽️', '🥂', '⚽', '🏃', '🧘'].map((em, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setCurrentEvent({ ...currentEvent, emoji: em })}
-                        className={`w-8 h-8 flex items-center justify-center rounded-full text-lg cursor-pointer transition-colors ${currentEvent.emoji === em ? 'bg-blue-200 dark:bg-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 border border-transparent'}`}
-                        title={em === '' ? 'Kein Emoji' : undefined}
+                  {currentEvent.backgroundColor === '#a855f7' && (
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wiederholung</label>
+                      <select 
+                        value={currentEvent.recurrence}
+                        onChange={(e) => setCurrentEvent({ ...currentEvent, recurrence: e.target.value })}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none transition-colors duration-200"
                       >
-                        {em === '' ? '🚫' : em}
-                      </button>
-                    ))}
+                        <option value="none">Keine Wiederholung</option>
+                        <option value="weekly">Wöchentlich</option>
+                        <option value="monthly">Monatlich</option>
+                        <option value="yearly">Jährlich</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titel des Termins (optional)</label>
+                    <input 
+                      type="text" 
+                      autoFocus
+                      required
+                      value={currentEvent.title} 
+                      onChange={e => setCurrentEvent({...currentEvent, title: e.target.value})}
+                      placeholder="z.B. Ausflug an den See"
+                      className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-colors duration-200"
+                    />
+                  </div>
+                  <div className="w-1/3 min-w-[120px]">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Emoji</label>
+                    <select
+                      value={currentEvent.emoji || ''}
+                      onChange={(e) => setCurrentEvent({ ...currentEvent, emoji: e.target.value })}
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white outline-none transition-colors duration-200"
+                    >
+                      <option value="">🚫 Kein</option>
+                      <option value="🎂">🎂 Geburtstag</option>
+                      <option value="🎉">🎉 Party</option>
+                      <option value="🏖️">🏖️ Urlaub</option>
+                      <option value="✈️">✈️ Flug/Reise</option>
+                      <option value="🚗">🚗 Auto</option>
+                      <option value="🩺">🩺 Arzt</option>
+                      <option value="💇">💇 Friseur</option>
+                      <option value="🎬">🎬 Kino/Film</option>
+                      <option value="🎵">🎵 Konzert</option>
+                      <option value="🎮">🎮 Gaming</option>
+                      <option value="🍽️">🍽️ Essen</option>
+                      <option value="🥂">🥂 Feier</option>
+                      <option value="⚽">⚽ Sport</option>
+                      <option value="🏃">🏃 Fitness</option>
+                      <option value="🧘">🧘 Entspannung</option>
+                    </select>
                   </div>
                 </div>
                 <div>
