@@ -304,6 +304,34 @@ function App() {
     }
   };
 
+  const handleEventDrop = async (info) => {
+    // Bei wiederkehrenden Terminen fragen wir sicherheitshalber nach, da Drag&Drop sonst
+    // ggf. verwirrend ist (ändert es alle? ändert es nur einen?).
+    // Für diesen Use-Case verbieten wir D&D für wiederkehrende Termine erst einmal.
+    if (info.event.extendedProps.recurrence && info.event.extendedProps.recurrence !== 'none') {
+      alert("Wiederkehrende Termine können momentan nicht per Drag & Drop verschoben werden. Bitte klicke den Termin an und bearbeite ihn.");
+      info.revert();
+      return;
+    }
+
+    const eventId = info.event.extendedProps.originalId || info.event.id;
+    const newDateStr = info.event.startStr;
+
+    try {
+      const eventRef = doc(db, "events", eventId);
+      await updateDoc(eventRef, {
+        date: newDateStr
+      });
+      // Um sicherzugehen, dass unser lokaler State synchron bleibt, 
+      // laden wir neu (ist ohnehin schnell, da klein).
+      await fetchEvents();
+    } catch (error) {
+      console.error("Fehler beim Verschieben (Drag&Drop):", error);
+      alert("Fehler beim Verschieben des Termins.");
+      info.revert(); // Bei Fehler im UI zurücksetzen
+    }
+  };
+
   const saveEvent = async (e) => {
     e.preventDefault()
     if (!currentEvent.title.trim()) return
@@ -484,6 +512,9 @@ function App() {
             height="auto"
             firstDay={1}
             locale="de"
+            editable={true} // Drag & Drop aktivieren
+            droppable={true}
+            eventDrop={handleEventDrop}
             buttonText={{
               today: 'Heute',
               month: 'Monat'
