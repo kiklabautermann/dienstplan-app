@@ -212,6 +212,10 @@ function App() {
 
   // Klick auf einen bestehenden Termin -> Bearbeiten/Löschen (jetzt für alle)
   const handleEventClick = (arg) => {
+    if (arg.jsEvent.target.closest('.duplicate-btn')) {
+      return; // Klick wurde vom Duplizieren-Button abgefangen
+    }
+
     const origId = arg.event.extendedProps.originalId || arg.event.id;
     const isRecurring = arg.event.extendedProps.recurrence && arg.event.extendedProps.recurrence !== 'none';
     
@@ -230,6 +234,37 @@ function App() {
     })
     setModalOpen(true)
   }
+
+  const handleDuplicate = async (eventProps) => {
+    const dateStr = eventProps.startStr;
+    if (!dateStr) return;
+
+    const parts = dateStr.split('-');
+    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+    d.setDate(d.getDate() + 1);
+    
+    const resY = d.getFullYear();
+    const resM = String(d.getMonth() + 1).padStart(2, '0');
+    const resD = String(d.getDate()).padStart(2, '0');
+    const nextDayStr = `${resY}-${resM}-${resD}`;
+
+    try {
+      await addDoc(collection(db, "events"), {
+        title: eventProps.title,
+        date: nextDayStr,
+        backgroundColor: eventProps.backgroundColor,
+        borderColor: eventProps.borderColor,
+        allDay: true,
+        comment: eventProps.extendedProps.comment || '',
+        recurrence: 'none', // Wir duplizieren als Einzeltermin
+        emoji: eventProps.extendedProps.emoji || ''
+      });
+      await fetchEvents();
+    } catch (error) {
+      console.error("Fehler beim Duplizieren:", error);
+      alert("Fehler beim Duplizieren.");
+    }
+  };
 
   const saveEvent = async (e) => {
     e.preventDefault()
@@ -430,14 +465,25 @@ function App() {
               const hasComment = eventInfo.event.extendedProps.comment;
               const emoji = eventInfo.event.extendedProps.emoji;
               return (
-                <div className="flex items-center gap-1 overflow-hidden w-full px-1 text-white">
+                <div className="group relative flex items-center gap-1 overflow-hidden w-full px-1 text-white">
                   {hasComment && (
                     <span className="text-[10px] flex-shrink-0" title="Kommentar vorhanden">💬</span>
                   )}
-                  <span className="truncate text-xs font-semibold">
+                  <span className="truncate text-xs font-semibold pr-4">
                     {emoji && <span className="mr-1">{emoji}</span>}
                     {eventInfo.event.title}
                   </span>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDuplicate(eventInfo.event);
+                    }}
+                    className="duplicate-btn absolute right-0 top-0 bottom-0 bg-black/40 hover:bg-black/60 text-white px-1.5 flex items-center justify-center cursor-pointer rounded-r"
+                    title="Auf nächsten Tag duplizieren"
+                  >
+                    +
+                  </button>
                 </div>
               );
             }}

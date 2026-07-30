@@ -60,6 +60,18 @@ body.dark {
   opacity: 0.5;
 }
 
+/* Duplizieren Button mit 3s Delay */
+.duplicate-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease 0s;
+  pointer-events: none;
+}
+.group:hover .duplicate-btn {
+  opacity: 1;
+  transition: opacity 0.2s ease 3s;
+  pointer-events: auto;
+}
+
 /* Ferien Manuel Highlight Background */
 .manuel-ferien-bg {
   background-color: #dcfce7 !important; /* Tailwind green-100 */
