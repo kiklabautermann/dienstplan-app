@@ -31,12 +31,38 @@ body.dark {
   border-color: #374151; /* Tailwind gray-700 */
 }
 
-.fc-day-today {
-  background-color: #eff6ff !important; /* Tailwind blue-50 */
+/* Heutigen Tag DEUTLICH hervorheben */
+.fc .fc-day-today {
+  background-color: #dbeafe !important; /* Tailwind blue-100 */
+  box-shadow: inset 0 0 0 3px #3b82f6 !important; /* Kräftiger blauer Rand innen */
 }
 
-.dark .fc-day-today {
-  background-color: rgba(30, 58, 138, 0.25) !important; /* Semi-transparent dark blue */
+.dark .fc .fc-day-today {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  box-shadow: inset 0 0 0 3px #60a5fa !important;
+}
+
+/* Datum-Badge für heute */
+.fc .fc-day-today .fc-daygrid-day-number {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  border-radius: 4px;
+  padding: 2px 8px !important;
+  margin: 4px;
+  font-weight: 800 !important;
+}
+
+.dark .fc .fc-day-today .fc-daygrid-day-number {
+  background-color: #60a5fa !important;
+  color: #111827 !important;
+}
+
+/* Verhindern, dass Wetter-Icons an Tagen des vorherigen/nächsten Monats (fc-day-other) gedimmt werden */
+.fc .fc-day-other .fc-daygrid-day-top {
+  opacity: 1 !important; 
+}
+.fc .fc-day-other .fc-daygrid-day-number {
+  opacity: 0.3 !important; /* Nur die Zahl dimmen, nicht das komplette Kästchen/Wetter */
 }
 
 /* Let's style other FullCalendar elements for dark mode */

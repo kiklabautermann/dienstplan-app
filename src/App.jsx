@@ -509,7 +509,7 @@ function App() {
                 <div className="flex justify-between items-start w-full">
                   <div className="text-[10px] leading-tight text-gray-500 dark:text-gray-400 font-medium flex gap-1 items-center p-1">
                     {weather && (
-                      <div className="flex items-center gap-1 bg-white/50 dark:bg-black/20 rounded px-1" title={`Max: ${weather.max}°C, Min: ${weather.min}°C`}>
+                      <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-sm rounded px-1.5 py-0.5" title={`Max: ${weather.max}°C, Min: ${weather.min}°C`}>
                         <span className="text-sm">{weather.icon}</span>
                         <span className="hidden sm:flex flex-col text-[9px] font-bold">
                           <span className="text-red-500">{weather.max}°</span>
