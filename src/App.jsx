@@ -73,6 +73,44 @@ function App() {
   const [modalOpen, setModalOpen] = useState(false)
   const [currentEvent, setCurrentEvent] = useState({ id: null, title: '', date: '', backgroundColor: '#a855f7', borderColor: '#a855f7', comment: '', recurrence: 'none', emoji: '' })
 
+  const [weatherData, setWeatherData] = useState({});
+
+  // Wetter API (Open-Meteo) für die nächsten 6 Tage
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        // Koordinaten (Zürich/Schweiz als Standard)
+        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=47.3769&longitude=8.5417&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=6");
+        const data = await res.json();
+        
+        if (data && data.daily) {
+          const wData = {};
+          data.daily.time.forEach((dateStr, index) => {
+            const code = data.daily.weather_code[index];
+            const max = Math.round(data.daily.temperature_2m_max[index]);
+            const min = Math.round(data.daily.temperature_2m_min[index]);
+            
+            let icon = '🌤️'; // Standard: Heiter
+            if (code === 0) icon = '☀️'; // Klar
+            else if (code === 1 || code === 2) icon = '⛅'; // Bewölkt
+            else if (code === 3) icon = '☁️'; // Stark bewölkt
+            else if (code >= 45 && code <= 48) icon = '🌫️'; // Nebel
+            else if (code >= 51 && code <= 55) icon = '🌧️'; // Nieselregen
+            else if (code >= 61 && code <= 65) icon = '☔'; // Regen
+            else if (code >= 71 && code <= 77) icon = '❄️'; // Schnee
+            else if (code >= 95) icon = '⛈️'; // Gewitter
+
+            wData[dateStr] = { icon, max, min };
+          });
+          setWeatherData(wData);
+        }
+      } catch (error) {
+        console.error("Fehler beim Abrufen des Wetters:", error);
+      }
+    };
+    fetchWeather();
+  }, []);
+
   // Auth Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -458,6 +496,31 @@ function App() {
               
               const hasManuelFerien = events.some(ev => ev.date === dateStr && ev.backgroundColor === '#10b981');
               return hasManuelFerien ? ['manuel-ferien-bg'] : [];
+            }}
+            dayCellContent={(arg) => {
+              const y = arg.date.getFullYear();
+              const m = String(arg.date.getMonth() + 1).padStart(2, '0');
+              const d = String(arg.date.getDate()).padStart(2, '0');
+              const dateKey = `${y}-${m}-${d}`;
+              
+              const weather = weatherData[dateKey];
+              
+              return (
+                <div className="flex justify-between items-start w-full">
+                  <div className="text-[10px] leading-tight text-gray-500 dark:text-gray-400 font-medium flex gap-1 items-center p-1">
+                    {weather && (
+                      <div className="flex items-center gap-1 bg-white/50 dark:bg-black/20 rounded px-1" title={`Max: ${weather.max}°C, Min: ${weather.min}°C`}>
+                        <span className="text-sm">{weather.icon}</span>
+                        <span className="hidden sm:flex flex-col text-[9px] font-bold">
+                          <span className="text-red-500">{weather.max}°</span>
+                          <span className="text-blue-500">{weather.min}°</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-1">{arg.dayNumberText}</div>
+                </div>
+              );
             }}
             dateClick={handleDateClick}
             eventClick={handleEventClick}
