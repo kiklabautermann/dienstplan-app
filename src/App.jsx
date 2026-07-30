@@ -458,6 +458,25 @@ function App() {
     setTimeout(() => setShareCopied(false), 3000);
   };
 
+  const getDarkColor = (color) => {
+    const map = {
+      '#ef4444': '#fca5a5', // red-500 -> red-300
+      '#0ea5e9': '#7dd3fc', // sky-500 -> sky-300
+      '#1e3a8a': '#93c5fd', // blue-900 -> blue-300
+      '#22c55e': '#86efac', // green-500 -> green-300
+      '#10b981': '#6ee7b7', // emerald-500 -> emerald-300
+      '#f97316': '#fdba74', // orange-500 -> orange-300
+      '#a855f7': '#d8b4fe'  // purple-500 -> purple-300
+    };
+    return map[color] || color;
+  };
+
+  const displayEvents = events.map(ev => ({
+    ...ev,
+    originalColor: ev.backgroundColor, // Wichtig für's Speichern!
+    backgroundColor: darkMode ? getDarkColor(ev.backgroundColor) : ev.backgroundColor,
+    borderColor: darkMode ? getDarkColor(ev.borderColor) : ev.borderColor,
+  }));
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 md:p-8 transition-colors duration-200">
@@ -497,13 +516,20 @@ function App() {
         {/* Legend */}
         <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex flex-wrap gap-4 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200 items-center justify-between">
           <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-red-500"></span> Frühschicht (1)</div>
-            <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-sky-500"></span> Spätschicht (2)</div>
-            <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-blue-900"></span> Nachtschicht</div>
-            <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-green-500"></span> Frei / Ferien / Ko / WB</div>
-            <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-[#10b981]"></span> Ferien Manuel</div>
-            <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-orange-500"></span> Pikett (P)</div>
-            <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-purple-500"></span> Privat / Event</div>
+            {eventCategories.map((cat, idx) => {
+              // We skip "Ferien" since it shares the color with "Frei" and label includes it
+              if (cat.label === "Ferien") return null; 
+              
+              const displayColor = darkMode ? getDarkColor(cat.color) : cat.color;
+              let displayLabel = cat.label;
+              if (cat.label === "Frei") displayLabel = "Frei / Ferien / Ko / WB";
+
+              return (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full" style={{ backgroundColor: displayColor }}></span> {displayLabel}
+                </div>
+              );
+            })}
           </div>
           <button
             onClick={() => {
@@ -526,16 +552,17 @@ function App() {
             <div className="flex flex-wrap gap-2">
               {eventCategories.map((cat, idx) => {
                 const isActive = stampMode?.label === cat.label;
+                const displayColor = darkMode ? getDarkColor(cat.color) : cat.color;
                 return (
                   <button
                     key={idx}
                     onClick={() => setStampMode(isActive ? null : cat)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer border ${isActive ? 'ring-2 ring-offset-1 dark:ring-offset-gray-800' : 'opacity-80 hover:opacity-100'}`}
                     style={{
-                      backgroundColor: isActive ? cat.color : 'transparent',
-                      color: isActive ? 'white' : cat.color,
-                      borderColor: cat.color,
-                      boxShadow: isActive ? `0 0 0 2px ${cat.color}40` : 'none'
+                      backgroundColor: isActive ? displayColor : 'transparent',
+                      color: isActive ? (darkMode ? '#111827' : 'white') : displayColor,
+                      borderColor: displayColor,
+                      boxShadow: isActive ? `0 0 0 2px ${displayColor}40` : 'none'
                     }}
                   >
                     {isActive ? `✓ ${cat.label} stempeln` : `+ ${cat.label}`}
@@ -575,7 +602,7 @@ function App() {
               center: 'title',
               right: 'dayGridMonth'
             }}
-            events={events}
+            events={displayEvents}
             height="auto"
             firstDay={1}
             locale="de"
@@ -632,7 +659,7 @@ function App() {
               const hasComment = eventInfo.event.extendedProps.comment;
               const emoji = eventInfo.event.extendedProps.emoji;
               return (
-                <div className="group relative flex items-center gap-1 overflow-hidden w-full px-1 text-white">
+                <div className={`group relative flex items-center gap-1 overflow-hidden w-full px-1 ${darkMode ? 'text-gray-900' : 'text-white'}`}>
                   {hasComment && (
                     <span className="text-[10px] flex-shrink-0" title="Kommentar vorhanden">💬</span>
                   )}
@@ -646,7 +673,7 @@ function App() {
                       e.stopPropagation();
                       handleDuplicate(eventInfo.event);
                     }}
-                    className="duplicate-btn absolute right-0 top-0 bottom-0 bg-black/40 hover:bg-black/60 text-white px-1.5 flex items-center justify-center cursor-pointer rounded-r"
+                    className={`duplicate-btn absolute right-0 top-0 bottom-0 ${darkMode ? 'bg-white/40 hover:bg-white/60' : 'bg-black/40 hover:bg-black/60'} px-1.5 flex items-center justify-center cursor-pointer rounded-r`}
                     title="Auf nächsten Tag duplizieren"
                   >
                     +
