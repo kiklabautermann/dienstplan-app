@@ -77,6 +77,10 @@ function App() {
   const [stampMode, setStampMode] = useState(null); // Speichert die ausgewählte Kategorie für den Quick-Add Modus
   const [showQuickAdd, setShowQuickAdd] = useState(false); // Toggle für die Quick-Add Leiste
 
+  // View Tracker für Statistik
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
   // Wetter API (Open-Meteo) für die nächsten 6 Tage
   useEffect(() => {
     const fetchWeather = async () => {
@@ -578,6 +582,49 @@ function App() {
           </div>
         )}
 
+        {/* Statistik Dashboard */}
+        <div className="p-4 bg-indigo-50/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
+          <h3 className="text-sm font-semibold mb-3 text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
+            📊 Statistik für {new Date(currentYear, currentMonth).toLocaleString('de-CH', { month: 'long', year: 'numeric' })}
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {(() => {
+              const currentMonthEvents = events.filter(ev => {
+                if(!ev.date) return false;
+                const [y, m] = ev.date.split('-');
+                return parseInt(y) === currentYear && parseInt(m) - 1 === currentMonth;
+              });
+
+              const stats = {};
+              eventCategories.forEach(cat => stats[cat.label] = 0);
+              
+              currentMonthEvents.forEach(ev => {
+                const colorToMatch = ev.originalColor || ev.backgroundColor;
+                const cat = eventCategories.find(c => c.color === colorToMatch);
+                if (cat) {
+                  stats[cat.label] = (stats[cat.label] || 0) + 1;
+                } else {
+                  stats['Andere'] = (stats['Andere'] || 0) + 1;
+                }
+              });
+
+              // Nur Kategorien anzeigen, die > 0 sind (optional, aber übersichtlicher)
+              return Object.entries(stats).map(([label, count], idx) => {
+                if (count === 0) return null;
+                const catInfo = eventCategories.find(c => c.label === label);
+                const color = catInfo ? (darkMode ? getDarkColor(catInfo.color) : catInfo.color) : '#9ca3af'; // gray-400 als Fallback
+                return (
+                  <div key={idx} className="flex items-center gap-2 bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 shadow-sm">
+                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}:</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white ml-1">{count}x</span>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </div>
+
         {/* Database Seeder Button (Nur anzeigen wenn keine Events da sind) */}
         {events.length === 0 && (
           <div className="p-4 bg-yellow-50 dark:bg-yellow-950/20 border-b border-yellow-200 dark:border-yellow-900/50 flex justify-center text-yellow-800 dark:text-yellow-200 transition-colors duration-200">
@@ -609,6 +656,10 @@ function App() {
             editable={true} // Drag & Drop aktivieren
             droppable={true}
             eventDrop={handleEventDrop}
+            datesSet={(dateInfo) => {
+              setCurrentMonth(dateInfo.view.currentStart.getMonth());
+              setCurrentYear(dateInfo.view.currentStart.getFullYear());
+            }}
             buttonText={{
               today: 'Heute',
               month: 'Monat'
