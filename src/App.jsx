@@ -692,6 +692,49 @@ function App() {
           />
         </div>
 
+        {/* Statistik Dashboard (jetzt unter dem Kalender) */}
+        <div className="p-4 bg-indigo-50/50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 transition-colors duration-200 rounded-b-2xl">
+          <h3 className="text-sm font-semibold mb-3 text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
+            📊 Statistik für {new Date(currentYear, currentMonth).toLocaleString('de-CH', { month: 'long', year: 'numeric' })}
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {(() => {
+              const currentMonthEvents = events.filter(ev => {
+                if(!ev.date) return false;
+                const [y, m] = ev.date.split('-');
+                return parseInt(y) === currentYear && parseInt(m) - 1 === currentMonth;
+              });
+
+              const stats = {};
+              eventCategories.forEach(cat => stats[cat.label] = 0);
+              
+              currentMonthEvents.forEach(ev => {
+                const colorToMatch = ev.originalColor || ev.backgroundColor;
+                const cat = eventCategories.find(c => c.color === colorToMatch);
+                if (cat) {
+                  stats[cat.label] = (stats[cat.label] || 0) + 1;
+                } else {
+                  stats['Andere'] = (stats['Andere'] || 0) + 1;
+                }
+              });
+
+              // Nur Kategorien anzeigen, die > 0 sind (optional, aber übersichtlicher)
+              return Object.entries(stats).map(([label, count], idx) => {
+                if (count === 0) return null;
+                const catInfo = eventCategories.find(c => c.label === label);
+                const color = catInfo ? (darkMode ? getDarkColor(catInfo.color) : catInfo.color) : '#9ca3af'; // gray-400 als Fallback
+                return (
+                  <div key={idx} className="flex items-center gap-2 bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 shadow-sm">
+                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}:</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white ml-1">{count}x</span>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </div>
+
         {/* Modal for Add/Edit Event */}
         {modalOpen && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
