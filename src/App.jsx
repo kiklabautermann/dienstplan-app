@@ -75,6 +75,7 @@ function App() {
 
   const [weatherData, setWeatherData] = useState({});
   const [stampMode, setStampMode] = useState(null); // Speichert die ausgewählte Kategorie für den Quick-Add Modus
+  const [showQuickAdd, setShowQuickAdd] = useState(false); // Toggle für die Quick-Add Leiste
 
   // Wetter API (Open-Meteo) für die nächsten 6 Tage
   useEffect(() => {
