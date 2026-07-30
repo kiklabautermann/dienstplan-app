@@ -537,21 +537,23 @@ function App() {
               const weather = weatherData[dateKey];
               
               return (
-                <div className="flex justify-end items-start w-full relative h-full">
-                  {weather && (
-                    <div 
-                      className="absolute left-0 top-0 m-0.5 sm:m-1 flex items-center bg-transparent sm:bg-white sm:dark:bg-gray-800 sm:border border-gray-200 dark:border-gray-600 sm:shadow-sm rounded sm:px-1 py-0.5 z-10" 
-                      title={`Max: ${weather.max}°C, Min: ${weather.min}°C`}
-                    >
-                      <span className="text-xs sm:text-sm leading-none">{weather.icon}</span>
-                      <span className="hidden sm:flex flex-col text-[9px] font-bold leading-none ml-1">
-                        <span className="text-red-500">{weather.max}°</span>
-                        <span className="text-blue-500">{weather.min}°</span>
-                      </span>
-                    </div>
-                  )}
+                <div className="flex justify-between items-start w-full px-1 pt-1 box-border">
+                  <div className="flex-shrink-0">
+                    {weather && (
+                      <div 
+                        className="flex items-center bg-transparent sm:bg-white sm:dark:bg-gray-800 sm:border border-gray-200 dark:border-gray-600 sm:shadow-sm rounded sm:px-1 py-0.5" 
+                        title={`Max: ${weather.max}°C, Min: ${weather.min}°C`}
+                      >
+                        <span className="text-xs sm:text-sm leading-none">{weather.icon}</span>
+                        <span className="hidden sm:flex flex-col text-[9px] font-bold leading-none ml-1">
+                          <span className="text-red-500">{weather.max}°</span>
+                          <span className="text-blue-500">{weather.min}°</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   {/* Die Standardklasse fc-daygrid-day-number ist wichtig, damit unser CSS für 'Heute' greift */}
-                  <div className="fc-daygrid-day-number z-10 p-1">
+                  <div className="fc-daygrid-day-number flex-shrink-0 leading-none">
                     {arg.dayNumberText}
                   </div>
                 </div>
