@@ -64,8 +64,10 @@ body.dark {
 }
 
 /* Let's style other FullCalendar elements for dark mode */
-.dark .fc .fc-col-header-cell-cushion {
-  color: #f3f4f6 !important; /* Tailwind gray-100 für starken Kontrast bei den Wochentagen */
+html.dark body .fc .fc-col-header-cell-cushion,
+.dark .fc-theme-standard th .fc-col-header-cell-cushion {
+  color: #ffffff !important; /* Pures Weiß für maximalen Kontrast, extrem spezifischer Selektor */
+  font-weight: bold !important;
 }
 
 .dark .fc .fc-daygrid-day-number {
