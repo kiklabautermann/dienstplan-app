@@ -537,7 +537,7 @@ function App() {
               const weather = weatherData[dateKey];
               
               return (
-                <div className="flex justify-end w-full relative">
+                <div className="flex justify-end items-start w-full relative h-full">
                   {weather && (
                     <div 
                       className="absolute left-0 top-0 m-0.5 sm:m-1 flex items-center bg-transparent sm:bg-white sm:dark:bg-gray-800 sm:border border-gray-200 dark:border-gray-600 sm:shadow-sm rounded sm:px-1 py-0.5 z-10" 
