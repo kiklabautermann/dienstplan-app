@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /events/{eventId} {
+      // Erlaube Lesen und Schreiben nur für authentifizierte Benutzer.
+      // Für maximale Sicherheit kannst du hier auch eine Liste erlaubter E-Mails pflegen.
+      allow read, write: if request.auth != null;
+    }
+  }
+}
