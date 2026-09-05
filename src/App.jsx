@@ -710,7 +710,6 @@ function App() {
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
-            initialDate="2026-08-01"
             headerToolbar={{
               left: 'prev,next today addEvent undo',
               center: 'title',
